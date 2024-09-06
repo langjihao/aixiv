@@ -30,8 +30,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <ClerkProvider
-        appearance={{
+      {/* <ClerkProvider */}
+        {/* appearance={{
           variables: { colorPrimary: "#000000" },
           elements: {
             formButtonPrimary:
@@ -46,13 +46,13 @@ export default function RootLayout({
             card: "bg-[#fafafa]",
           },
         }}
-      >
+      > */}
       <body>
         <LayoutWrapper>
           {children}
         </LayoutWrapper>
       </body>
-      </ClerkProvider>
+      {/* </ClerkProvider> */}
 
       <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-core.min.js" />
       <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/autoloader/prism-autoloader.min.js" />
