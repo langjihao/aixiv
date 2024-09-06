@@ -1,33 +1,33 @@
 'use client'
-
 import React, { useState } from 'react';
-import SiteLink from './SiteLink';
-import { academicSites } from '../consts/navitem';
 import { FaSearch } from 'react-icons/fa';
+import SiteLink from './SiteLink';
+import { academicSites } from '../consts/navItem'; // 修改此行
 
-interface AcademicSite {
-  name: string;
-  url: string;
-  description: string;
-}
-interface SearchEngine {
+interface SearchEngines {
   [key: string]: string;
 }
 
-interface SearchEngines {
-  SearchEngine:SearchEngine[];
-}
-
-const searchEngines = {
+const searchEngines: SearchEngines = {
   'Google': 'https://www.google.com/search?q=',
   'Google Scholar': 'https://scholar.google.com/scholar?q=',
   'arXiv': 'https://arxiv.org/search/?query=',
   'Semantic Scholar': 'https://www.semanticscholar.org/search?q=',
 };
 
+interface AcademicSite {
+  name: string;
+  url: string;
+  description: string;
+}
+
+interface Sites {
+  [key: string]: AcademicSite[];
+}
+
 const NavigationPage: React.FC = () => {
-  const [sites, setSites] = useState(academicSites);
-  const [searchEngine, setSearchEngine] = useState('Google');
+  const [sites, setSites] = useState<Sites>(academicSites);
+  const [searchEngine, setSearchEngine] = useState<keyof typeof searchEngines>('Google');
   const [query, setQuery] = useState('');
 
   const handleSearch = () => {
@@ -43,7 +43,7 @@ const NavigationPage: React.FC = () => {
             {Object.keys(searchEngines).map((engine) => (
               <button
                 key={engine}
-                onClick={() => setSearchEngine(engine)}
+                onClick={() => setSearchEngine(engine as keyof typeof searchEngines)}
                 className={`px-4 py-2 rounded-t ${
                   searchEngine === engine
                     ? 'bg-blue-600 text-white'

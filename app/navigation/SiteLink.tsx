@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 
-const SiteLink = ({ site }) => {
+interface Site {
+  name: string;
+  url: string;
+  description: string;
+}
+
+interface SiteLinkProps {
+  site: Site;
+}
+
+const SiteLink: React.FC<SiteLinkProps> = ({ site }) => {
   const [isHovered, setIsHovered] = useState(false);
-    const logo = './logo/'+site.name.replace(' ','_')+'.png';
+  const logo = './logo/' + site.name.replace(' ', '_') + '.png';
+
   return (
     <Link 
       href={site.url} 
