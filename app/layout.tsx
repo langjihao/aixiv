@@ -3,10 +3,11 @@ import "./globals.css";
 import Script from "next/script";
 import { Metadata } from "next";
 import localFont from "next/font/local";
+import LayoutWrapper from './components/LayoutWrapper';
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://clerk-next-app.vercel.app/"),
-  title: "Next.js Clerk Template",
+  title: "AIXiv",
   description:
     "A simple and powerful Next.js template featuring authentication and user management powered by Clerk.",
   openGraph: { images: ["/og.png"] },
@@ -46,9 +47,11 @@ export default function RootLayout({
           },
         }}
       >
-        <body className={`min-h-screen flex flex-col antialiased`}>
+      <body>
+        <LayoutWrapper>
           {children}
-        </body>
+        </LayoutWrapper>
+      </body>
       </ClerkProvider>
 
       <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-core.min.js" />
