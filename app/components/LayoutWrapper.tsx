@@ -30,7 +30,7 @@ const LayoutWrapper: React.FC<LayoutWrapperProps> = ({ children }) => {
               </Link>
             </div>
             <div className="flex items-center space-x-4">
-              <SignedIn>
+              {/* <SignedIn>
                 <UserCircleIcon href="./dashboard" className="h-6 w-6 text-gray-600 cursor-pointer hover:text-gray-900"/>
               </SignedIn>
               <SignedOut>
@@ -39,7 +39,7 @@ const LayoutWrapper: React.FC<LayoutWrapperProps> = ({ children }) => {
                     登录
                   </button>
                 </SignInButton>
-              </SignedOut>
+              </SignedOut> */}
             </div>
           </div>
         </header>
