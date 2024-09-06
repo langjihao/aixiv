@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import PaperDetail from '../../app/components/PaperDetail';
-import { fetchPaperById } from './api';
+import { fetchPaperById } from '../../lib/api';
 
 const PaperDetailPage: React.FC = () => {
   const router = useRouter();
