@@ -54,14 +54,16 @@ const PaperDetailPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <PaperDetail
-        title={paper.paper_title}
-        abstract={paper.paper_abstract}
-        translatedAbstract={paper.translated_abstract}
-        authors={paper.paper_authors.split(', ')}
-        institution={paper.institution_list.split(', ')}
-        tags={paper.tags.split(', ')}
-        date={paper.publish_time}
-        downloadUrl={paper.paper_url}
+              title={paper.paper_title}
+              abstract={paper.paper_abstract}
+              translatedAbstract={paper.translated_abstract}
+              authors={paper.paper_authors.split(',')}
+              institution={JSON.parse(paper.institution_list)}
+              tags={JSON.parse(paper.tags)}
+              date={paper.publish_time}
+              downloadUrl={paper.paper_url}
+              arxivId={paper.arxiv_id}
+              repoUrl={paper.repo_url}
       />
     </div>
   );
