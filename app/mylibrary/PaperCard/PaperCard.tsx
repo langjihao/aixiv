@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import {PaperMain} from '../../../lib/DataModel'
 interface PaperCardProps extends PaperMain{
   viewMode: 'grid' | 'list';
+  score: number;
 }
 
 const PaperCard: React.FC<PaperCardProps> = ({
@@ -13,6 +14,7 @@ const PaperCard: React.FC<PaperCardProps> = ({
   authors,
   institutions,
   tags,
+  score,
   publication_date,
   abstract,
   url,
@@ -39,6 +41,7 @@ const PaperCard: React.FC<PaperCardProps> = ({
         />
       ) : (
           <PaperList
+            score={score}
             arxiv_id={arxiv_id}
             cover={cover}
             title={title}
