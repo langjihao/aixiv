@@ -1,54 +1,56 @@
 'use client'
-import { fetchPapersByTopic } from '../../lib/api';
 import React, { useState, useMemo, useEffect } from 'react';
-import PaperCard from '../components/PaperCard/PaperCard';
+import PaperCard from './PaperCard/PaperCard';
 import { Squares2X2Icon, ListBulletIcon } from '@heroicons/react/24/solid';
-import { PaperMain } from '../../lib/DataModel';
+import { PaperMain, UserPaper } from '../../lib/DataModel';
 import PaperModal from '../components/PaperModal/PaperModal';
-import { format, startOfWeek, endOfWeek } from 'date-fns';
-
+import { useUser,SignIn } from '@clerk/nextjs';
+import { fetchUserLibrary } from '../../lib/api'
 const TABS = [
-  { name: '医学报告', key: 'MRG' },
-  { name: '图像分割', key: 'Medical Image Segmentation' },
-  { name: '图像增强', key: 'Image Enhancement' },
-  { name: '语音情感识别', key: 'Speech Emotion Recognition' },
-  { name: '大模型', key: 'LLM' },
+  { name: '想读', key: 0 },
+  { name: '已略读', key: 2 },
+  { name: '已精读', key: 3 },
+  { name: '已复现', key: 4 },
+//   { name: '在读', key: 1 },
 ];
+interface UserPaperProps extends PaperMain{
+  status: number
+}
 
-const HomePage: React.FC = () => {
-  const [papers, setPapers] = useState<PaperMain[]>([]);
+const MyLibrary: React.FC = () => {
+  const [papers, setPapers] = useState<UserPaper[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState('');
+  const [activeTab, setActiveTab] = useState<number>(0);
   const [openModalId, setOpenModalId] = useState<string>('');
-  useEffect(() => {
-    const storedTab = localStorage.getItem('activeTab');
-    if (storedTab) {
-      setActiveTab(storedTab);
-    }
-    else setActiveTab(TABS[0].key)
-  }, []);
-  const handleChangeTab = (key: string) => {
-    setActiveTab(key)
-    localStorage.setItem('activeTab',key)
-  }
+  const { user, isSignedIn } = useUser();
+
   useEffect(() => {
     const fetchPapers = async () => {
-      if(activeTab!=''){
       try {
         setLoading(true);
-        const data = await fetchPapersByTopic(activeTab);
+        if(user!=null){
+        const data = await fetchUserLibrary(user.id,activeTab);
+        console.log(data)
         setPapers(data);
         setLoading(false);
+        }else{
+          console.log('not login')
+        }
       } catch (err) {
         setError('获取论文时出错。请稍后再试。');
         setLoading(false);
       }
-    }};
+    };
+
     fetchPapers();
   }, [activeTab]);
+
+  const handleChangeTab = (key: number) =>{
+    setActiveTab(key)
+  }
 
   const handleOpenModal = (id: string) => {
     console.log('id:', id);
@@ -66,7 +68,7 @@ const HomePage: React.FC = () => {
         selectedTags.length === 0 ||
         (Array.isArray(paper.tags) && selectedTags.every(tag => paper.tags.includes(tag)))
       )
-      .sort((a, b) => new Date(b.publication_date).getTime() - new Date(a.publication_date).getTime()); // 按时间戳升序排序
+      .sort((a, b) => new Date(b.paper_info.publication_date).getTime() - new Date(a.paper_info.publication_date).getTime()); // 按时间戳升序排序
   }, [papers, selectedTags]);
 
   const allTags = useMemo(() => {
@@ -88,22 +90,10 @@ const HomePage: React.FC = () => {
       .map(([tag]) => tag); // 仅保留标签名
   }, [tagCounts]);
 
-  // 按周分组
-  const papersByWeek = useMemo(() => {
-    return sortedAndFilteredPapers.reduce((acc, paper) => {
-      const weekStart = format(startOfWeek(new Date(paper.publication_date)), 'yyyy-MM-dd');
-      const weekEnd = format(endOfWeek(new Date(paper.publication_date)), 'yyyy-MM-dd');
-      const weekKey = `${weekStart} - ${weekEnd}`;
-      if (!acc[weekKey]) {
-        acc[weekKey] = [];
-      }
-      acc[weekKey].push(paper);
-      return acc;
-    }, {} as Record<string, PaperMain[]>);
-  }, [sortedAndFilteredPapers]);
-
   // Tab切换
-  return (
+  return(<>
+  {isSignedIn ? (
+    <>
     <div className="container mx-auto px-4 py-8">
       <div className="top-0 z-10">
         <div className='flex justify-between'>
@@ -161,36 +151,32 @@ const HomePage: React.FC = () => {
             ))}
           </div>
         </div>
-      </div>
-
+        </div>
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <div className="loader"></div>
         </div>
       ) : (
-        Object.entries(papersByWeek).map(([week, papers]) => (
-          <div key={week} className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">{week}</h2>
-            <div className={viewMode === 'grid'
-              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-              : "space-y-6"
-            }>
-              {papers.map((paper) => (
-                <div key={paper.paper_id} onClick={() => handleOpenModal(paper.paper_id)}>
-                  <PaperCard
-                    {...paper}
-                    viewMode={viewMode}
-                  />
-                </div>
-              ))}
-            </div>
+        // 移除多余的花括号
+        papers.map((paper) => (
+          <div key={paper.paper_id} onClick={() => handleOpenModal(paper.paper_id)}>
+            <PaperCard
+              paper_id={paper.paper_id}
+              title={paper.paper_info.title}
+              viewMode={viewMode}
+              score={paper.score}
+              abstract={paper.paper_info.abstract}
+              
+            />
           </div>
         ))
       )}
 
       {openModalId !== '' && (<PaperModal paper_id={openModalId} onClose={handleCloseModal} />)}
     </div>
-  );
+  </> ):(<SignIn/>)
+};
+</> )
 };
 
-export default HomePage;
+export default MyLibrary;

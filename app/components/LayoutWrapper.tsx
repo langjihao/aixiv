@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-
+import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 interface LayoutWrapperProps {
   children: React.ReactNode;
 }
@@ -26,18 +26,20 @@ const LayoutWrapper: React.FC<LayoutWrapperProps> = ({ children }) => {
               <Link href="/navigation" className="ml-4 text-lg font-semibold text-gray-700 hover:text-gray-900 transition-colors duration-300">
                 学术导航
               </Link>
+              <Link href="/mylibrary" className="ml-4 text-lg font-semibold text-gray-700 hover:text-gray-900 transition-colors duration-300">
+                我的文库
+              </Link>
+              <Link href="/teamlibrary" className="ml-4 text-lg font-semibold text-gray-700 hover:text-gray-900 transition-colors duration-300">
+                团队文库
+              </Link>
             </div>
             <div className="flex items-center space-x-4">
-              {/* <SignedIn>
-                <UserCircleIcon href="./dashboard" className="h-6 w-6 text-gray-600 cursor-pointer hover:text-gray-900"/>
-              </SignedIn>
-              <SignedOut>
-                <SignInButton>
-                  <button className="px-4 py-2 rounded-full bg-[#131316] text-white text-sm font-semibold">
-                    登录
-                  </button>
-                </SignInButton>
-              </SignedOut> */}
+            <SignedOut>
+              <SignInButton />
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
             </div>
           </div>
         </header>

@@ -18,3 +18,12 @@
     rgba(0, 0, 0, 0) 100%
   );
 }
+
+@media print {
+  .poster-container {
+    width: 1920px;
+    height: 1080px;
+    transform: scale(2);
+    transform-origin: top left;
+  }
+}

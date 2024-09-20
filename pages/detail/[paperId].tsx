@@ -1,31 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import PaperDetail from '../../app/components/PaperDetail';
-import { fetchPaperById } from '../../lib/api';
+import { fetchPapersByID } from '@/lib/api';
+import PaperDetail from '@/app/components/PaperDetail';
 
 const PaperDetailPage: React.FC = () => {
   const router = useRouter();
-  const { paperId } = router.query;
+  const { paper_id } = router.query;
   const [paper, setPaper] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!paperId) return;
+    if (!paper_id) return;
 
     const getPaper = async () => {
       try {
-        const data = await fetchPaperById(paperId as string);
+        const data = await fetchPapersByID(paper_id as string);
+        console.log('data:', data);
         setPaper(data);
-        setLoading(false);
       } catch (err) {
-        setError('获取论文时出错。请稍后再试。');
-        setLoading(false);
+        console.error('Failed to fetch paper:', err);
       }
     };
 
     getPaper();
-  }, [paperId]);
+  }, [paper_id]);
 
   if (loading) {
     return (
@@ -52,20 +51,19 @@ const PaperDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
       <PaperDetail
-              title={paper.paper_title}
-              abstract={paper.paper_abstract}
-              translatedAbstract={paper.translated_abstract}
-              authors={paper.paper_authors.split(',')}
-              institution={JSON.parse(paper.institution_list)}
-              tags={JSON.parse(paper.tags)}
-              date={paper.publish_time}
-              downloadUrl={paper.paper_url}
-              arxivId={paper.arxiv_id}
-              repoUrl={paper.repo_url}
+        paper_id={paper.paper_id}
+        title={paper.title}
+        abstract={paper.abstract}
+        translatedAbstract={paper.translated_abstract}
+        authors={paper.authors}
+        institution={paper.institutions}
+        tags={paper.tags}
+        date={paper.publication_date}
+        downloadUrl={paper.url}
+        arxivId={paper.arxiv_id}
+        repoUrl={paper.code_url}
       />
-    </div>
   );
 };
 

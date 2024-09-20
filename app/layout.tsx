@@ -4,6 +4,7 @@ import Script from "next/script";
 import { Metadata } from "next";
 import localFont from "next/font/local";
 import LayoutWrapper from './components/LayoutWrapper';
+import { Roboto, Lobster } from 'next/font/google';
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://clerk-next-app.vercel.app/"),
@@ -22,6 +23,17 @@ const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
 });
+const roboto = Roboto({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  variable: '--font-roboto',
+});
+
+const lobster = Lobster({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-lobster',
+});
 
 export default function RootLayout({
   children,
@@ -30,8 +42,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      {/* <ClerkProvider */}
-        {/* appearance={{
+      <ClerkProvider
+         appearance={{
           variables: { colorPrimary: "#000000" },
           elements: {
             formButtonPrimary:
@@ -46,13 +58,13 @@ export default function RootLayout({
             card: "bg-[#fafafa]",
           },
         }}
-      > */}
+      >
       <body>
         <LayoutWrapper>
           {children}
         </LayoutWrapper>
       </body>
-      {/* </ClerkProvider> */}
+      </ClerkProvider>
 
       <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-core.min.js" />
       <Script src="https://cdn.jsdelivr.net/npm/prismjs@1/plugins/autoloader/prism-autoloader.min.js" />

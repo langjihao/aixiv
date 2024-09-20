@@ -1,36 +1,31 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
-
-interface PaperMain {
-  id: string;
-  title: string;
-  authors: string;
-  institution: string[];
-  tags: string[];
-  date: string;
-  abstract: string;
-  topic: string;
-  url: string;
+// import {PaperMain} from '../../../lib/DataModel'
+interface PaperListProps{
+  arxiv_id:string,
+  cover:string | null,
+  title:string,
+  authors:string[] | null,
+  institutions:string[] | null,
+  tags:string[],
+  publication_date:string,
 }
 
-const PaperList: React.FC<PaperMain> = ({
-  id,
+const PaperList: React.FC<PaperListProps> = ({
+  arxiv_id,
+  cover,
   title,
   authors,
-  institution,
+  institutions,
   tags,
-  date,
-  abstract,
-  topic,
-  url,
+  publication_date,
 }) => {
-  const [showPreview, setShowPreview] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const formattedDate = new Date(date).toLocaleDateString('zh-CN', {
+
+  const formattedDate = new Date(publication_date).toLocaleDateString('zh-CN', {
     month: 'numeric',
     day: 'numeric',
   });
-  const institutionString = institution.join(', ');
+  const institutionString = institutions ? institutions.join(', ') : '';
 
   const commonContent = (
     <div className="flex flex-col h-full">

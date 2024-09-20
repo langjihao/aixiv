@@ -159,11 +159,6 @@ export const academicSites = {
         description: '国际知名的学术出版公司'
       },
       {
-        name: 'Taylor & Francis',
-        url: 'https://www.taylorandfrancis.com/',
-        description: '全球领先的学术出版公司'
-      },
-      {
         name: 'Nature',
         url: 'https://www.nature.com/',
         description: '著名的科学期刊出版公司'
