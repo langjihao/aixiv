@@ -83,10 +83,19 @@ export const fetchUserLibrary = async (user_id: string, status: number) => {
       `)
     .eq('user_id', user_id) // 添加第一个查询条件
     .eq('status', status); // 添加第二个查询条件
-
+  
   if (error) {
     console.error('Error fetching user library:', error);
     throw new Error(error.message);
   }
-  return papers; // 返回查询结果
+  // 转换 papers 为符合 UserPaper 接口的格式
+  const formattedPapers = papers.map((paper: any) => ({
+    paper_id: paper.paper_id,
+    tags: paper.tags,
+    status: paper.status,
+    score: paper.score,
+    paper_info: paper.papers, // 将 papers 转为 paper_info
+  }));
+
+  return formattedPapers;
 };

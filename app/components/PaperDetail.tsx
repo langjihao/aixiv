@@ -3,6 +3,7 @@ import Poster from './Poster';
 import { useUser,SignIn } from '@clerk/nextjs'; 
 import { addPapertoUserLibrary } from '@/lib/api'
 import { UserPaper } from '@/lib/DataModel';
+import LinkHandler from './LinkHandler';
 interface PaperDetailProps {
   paper_id:string;
   title: string;
@@ -98,33 +99,36 @@ const PaperDetail: React.FC<PaperDetailProps> = ({
           </div>
         </div>
         <div className="flex justify-center mt-8">
-          <a
-            href={downloadUrl}
+          <LinkHandler
+            url={downloadUrl}
+            isExternal={true}
             className="block bg-blue-600 text-white px-8 py-3 rounded-full text-lg font-semibold text-center hover:bg-blue-700 transition-colors duration-200 shadow-md mr-4 mb-4"
           >
             去Arxiv查看
-          </a>
-          <a
-            href={`https://arxiv.org/pdf/${arxivId}`}
+          </LinkHandler>
+          <LinkHandler // 将 PDF 链接替换为 LinkHandler
+            url={`https://arxiv.org/pdf/${arxivId}`}
+            isExternal={true}
             className="block bg-green-600 text-white px-8 py-3 rounded-full text-lg font-semibold text-center hover:bg-green-700 transition-colors duration-200 shadow-md mr-4 mb-4"
-            download
           >
             PDF
-          </a>
-          <a
-            href={`https://arxiv.org/html/${arxivId}?_immersive_translate_auto_translate=1`}
+          </LinkHandler>
+          <LinkHandler // 将沉浸式翻译链接替换为 LinkHandler
+            url={`https://arxiv.org/html/${arxivId}?_immersive_translate_auto_translate=1`}
+            isExternal={true}
             className="block bg-purple-600 text-white px-8 py-3 rounded-full text-lg font-semibold text-center hover:bg-purple-700 transition-colors duration-200 shadow-md mr-4 mb-4"
           >
             沉浸式翻译
-          </a>
+          </LinkHandler>
           {isSignedIn && collectionArea }
           {repoUrl && (
-            <a
-              href={repoUrl}
+            <LinkHandler // 将 GitHub 链接替换为 LinkHandler
+              url={repoUrl}
+              isExternal={true}
               className="block bg-red-600 text-white px-8 py-3 rounded-full text-lg font-semibold text-center hover:bg-red-700 transition-colors duration-200 shadow-md mr-4 mb-4"
             >
               GitHub
-            </a>
+            </LinkHandler>
           )}
 
           <button
