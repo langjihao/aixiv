@@ -67,7 +67,7 @@ const PaperList: React.FC<PaperListProps> = ({
       </div>
       <div className="mt-auto">
         <div className="flex flex-wrap gap-1 overflow-hidden" style={{ maxHeight: 'calc(2 * (1.5rem + 2px))' }}>
-          {tags.map(tag => (
+          {tags?.map(tag => (
             <span key={tag} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded inline-block">
               {tag}
             </span>
