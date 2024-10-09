@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PaperDetail from '../PaperDetail';
-import { fetchPapersByID } from '../../../lib/api';
+import { fetchPaperByID } from '../../../lib/DataBase';
 interface PaperPreviewModalProps  {
   paper_id:string;
   onClose: () => void;
@@ -17,7 +17,7 @@ const PaperModal: React.FC<PaperPreviewModalProps> = ({
     if (!paper_id) return;
     const getPaper = async () => {
       try {
-        const data = await fetchPapersByID(paper_id as string);
+        const data = await fetchPaperByID(paper_id as string);
         console.log('data:', data);
         setPaper(data);
       } catch (err) {

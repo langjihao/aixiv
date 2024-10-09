@@ -1,7 +1,7 @@
 import PaperList from "./PaperList";
 import PaperGrid from "./PaperGrid";
 import React, { useEffect, useState } from 'react';
-import {PaperMain} from '../../../lib/DataModel'
+import {PaperMain} from '../../../types/DataModel'
 interface PaperCardProps extends PaperMain{
   viewMode: 'grid' | 'list';
 }

@@ -1,11 +1,22 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 
+
 dotenv.config();
 
 const chatUrl = process.env.NEXT_PUBLIC_AI_BASE_URL || 'https://api.siliconflow.cn/v1/chat/completions';
 const apiKey = process.env.NEXT_PUBLIC_AI_API_KEY || 'your-api-key-here';
-
+function parseStringToArray(input: string): string[] {
+  try {
+    // 将单引号替换为双引号，以符合 JSON 格式
+    console.log(input);
+    const jsonString = input.replace(/'/g, '"');
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.error('解析字符串时出错:', error);
+    return [];
+  }
+}
 interface Message {
   role: string;
   content: string;
@@ -33,7 +44,7 @@ interface ApiResponse {
   choices: ResponseChoice[];
 }
 
-const getAiSummary = async (abstract: string, model = 'deepseek-ai/DeepSeek-V2-Chat'): Promise<string> => {
+const getAiSummary = async (abstract: string, model = 'meta-llama/Meta-Llama-3.1-8B-Instruct'): Promise<string> => {
   const payload: Payload = {
     model,
     messages: [
@@ -86,8 +97,9 @@ const getAiSummary = async (abstract: string, model = 'deepseek-ai/DeepSeek-V2-C
     throw error;
   }
 };
-
-const getAiTags = async (abstract: string, tags: string[][] = [['检索', '辅助分支', '损失函数', '数据不平衡', '速度快', '轻量化', 'Resnet', 'VIT', 'CLIP']], model = 'deepseek-ai/DeepSeek-V2-Chat'): Promise<string> => {
+// 根据摘要和已有关键词，生成新的关键词
+//TODO：后续改为自训练的Tag模型
+const getAiTags = async (abstract: string, tags: string[] = ['检索', '辅助分支', '损失函数', '数据不平衡', '速度快', '轻量化', 'Resnet', 'VIT', 'CLIP'], model = 'meta-llama/Meta-Llama-3.1-8B-Instruct') => {
   const content = `摘要:${abstract}关键词:${JSON.stringify(tags)}`;
   const payload: Payload = {
     model,
@@ -136,14 +148,14 @@ const getAiTags = async (abstract: string, tags: string[][] = [['检索', '辅�
   try {
     const response = await axios.post<ApiResponse>(chatUrl, payload, { headers });
     const content = response.data.choices[0].message.content;
-    return content;
+    return parseStringToArray(content);
   } catch (error) {
     console.error('Error fetching AI tags:', error);
     throw error;
   }
 };
 
-const getAiTranslation = async (abstract: string, model = 'deepseek-ai/DeepSeek-V2-Chat'): Promise<string> => {
+const getAiTranslation = async (abstract: string, model = 'meta-llama/Meta-Llama-3.1-8B-Instruct') => {
   const payload: Payload = {
     model,
     messages: [
@@ -156,12 +168,7 @@ const getAiTranslation = async (abstract: string, model = 'deepseek-ai/DeepSeek-
                   - 以下是常见的 AI 相关术语词汇对应表：
                   * Transformer -> Transformer
                   * LLM/Large Language Model -> 大语言模型
-                  * Generative AI -> 生成式 AI
-
-                  策略：
-                  分成两次翻译，但只返回第二次翻译的结果：
-                  1. 根据英文内容直译，保持原有格式，不要遗漏任何信息
-                  2. 根据第一次直译的结果重新意译，遵守原意的前提下让内容更通俗易懂、符合中文表达习惯，但要保留原有格式不变`
+                  * Generative AI -> 生成式 AI`
       },
       {
         role: 'user',

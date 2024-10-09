@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { fetchPapersByID } from '@/lib/api';
+import { fetchPaperByID } from '@/lib/DataBase';
 import PaperDetail from '@/app/components/PaperDetail';
 
 const PaperDetailPage: React.FC = () => {
@@ -15,7 +15,7 @@ const PaperDetailPage: React.FC = () => {
 
     const getPaper = async () => {
       try {
-        const data = await fetchPapersByID(paper_id as string);
+        const data = await fetchPaperByID(paper_id as string);
         console.log('data:', data);
         setPaper(data);
       } catch (err) {
