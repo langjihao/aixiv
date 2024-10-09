@@ -1,11 +1,13 @@
 'use client'
-import { fetchPapersByTopic } from '../../lib/api';
 import React, { useState, useMemo, useEffect } from 'react';
 import PaperCard from '../components/PaperCard/PaperCard';
 import { Squares2X2Icon, ListBulletIcon } from '@heroicons/react/24/solid';
-import { PaperMain } from '../../lib/DataModel';
+import { PaperMain } from '../../types/DataModel';
 import PaperModal from '../components/PaperModal/PaperModal';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
+import { fetchPapersByTopic,fetchPaperByID } from '../../lib/DataBase';
+import LoadingComponent from '../components/LoadingSpinner';
+import EmptyState from '../components/EmptyState';
 
 const TABS = [
   { name: '医学报告', key: 'MRG' },
@@ -23,6 +25,7 @@ const HomePage: React.FC = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState('');
   const [openModalId, setOpenModalId] = useState<string>('');
+
   useEffect(() => {
     const storedTab = localStorage.getItem('activeTab');
     if (storedTab) {
@@ -30,23 +33,26 @@ const HomePage: React.FC = () => {
     }
     else setActiveTab(TABS[0].key)
   }, []);
+
   const handleChangeTab = (key: string) => {
     setActiveTab(key)
     localStorage.setItem('activeTab',key)
   }
+
   useEffect(() => {
     const fetchPapers = async () => {
       if(activeTab!=''){
-      try {
-        setLoading(true);
-        const data = await fetchPapersByTopic(activeTab);
-        setPapers(data);
-        setLoading(false);
-      } catch (err) {
-        setError('获取论文时出错。请稍后再试。');
-        setLoading(false);
+        try {
+          setLoading(true);
+          const data = await fetchPapersByTopic(activeTab);
+          setPapers(data);
+        } catch (err) {
+          setError('获取论文时出错。请稍后再试。');
+        } finally {
+          setLoading(false);
+        }
       }
-    }};
+    };
     fetchPapers();
   }, [activeTab]);
 
@@ -66,7 +72,7 @@ const HomePage: React.FC = () => {
         selectedTags.length === 0 ||
         (Array.isArray(paper.tags) && selectedTags.every(tag => paper.tags.includes(tag)))
       )
-      .sort((a, b) => new Date(b.publication_date).getTime() - new Date(a.publication_date).getTime()); // 按时间戳升序排序
+      .sort((a, b) => new Date(b.publication_date).getTime() - new Date(a.publication_date).getTime());
   }, [papers, selectedTags]);
 
   const allTags = useMemo(() => {
@@ -76,16 +82,16 @@ const HomePage: React.FC = () => {
 
   const tagCounts = useMemo(() => {
     return allTags.reduce((acc, tag) => {
-      acc[tag] = papers.filter(paper => paper.tags.includes(tag)).length;
+      acc[tag] = papers.filter(paper => Array.isArray(paper.tags) && paper.tags.includes(tag)).length;
       return acc;
     }, {} as Record<string, number>);
   }, [allTags, papers]);
 
   const topTags = useMemo(() => {
     return Object.entries(tagCounts)
-      .sort(([, countA], [, countB]) => countB - countA) // 按数量降序排序
-      .slice(0, 10) // 取前10个标签
-      .map(([tag]) => tag); // 仅保留标签名
+      .sort(([, countA], [, countB]) => countB - countA)
+      .slice(0, 10)
+      .map(([tag]) => tag);
   }, [tagCounts]);
 
   // 按周分组
@@ -102,7 +108,6 @@ const HomePage: React.FC = () => {
     }, {} as Record<string, PaperMain[]>);
   }, [sortedAndFilteredPapers]);
 
-  // Tab切换
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="top-0 z-10">
@@ -164,9 +169,9 @@ const HomePage: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="loader"></div>
-        </div>
+        <LoadingComponent />
+      ) : sortedAndFilteredPapers.length === 0 ? (
+        <EmptyState message="没有找到结果" icon="🔍" />
       ) : (
         Object.entries(papersByWeek).map(([week, papers]) => (
           <div key={week} className="mb-8">
@@ -187,10 +192,10 @@ const HomePage: React.FC = () => {
           </div>
         ))
       )}
-
       {openModalId !== '' && (<PaperModal paper_id={openModalId} onClose={handleCloseModal} />)}
     </div>
+    
   );
-};
+}
 
 export default HomePage;

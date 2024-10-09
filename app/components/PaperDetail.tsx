@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import Poster from './Poster';
 import { useUser,SignIn } from '@clerk/nextjs'; 
-import { addPapertoUserLibrary } from '@/lib/api'
-import { UserPaper } from '@/lib/DataModel';
+import { addPapertoUserLibrary } from '@/lib/DataBase'
+import { UserPaper } from '@/types/DataModel';
 interface PaperDetailProps {
   paper_id:string;
   title: string;

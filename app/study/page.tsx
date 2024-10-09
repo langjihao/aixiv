@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { fetchPapersfromSupabase } from '@/lib/api';
+import { fetchPapersfromSupabase } from '@/lib/DataBase';
 import { searchPapersBypaperId } from '@/lib/SemanticAPI';
 
 const TestPage: React.FC = () => {

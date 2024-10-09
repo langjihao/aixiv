@@ -29,14 +29,6 @@ export interface PaperDetailProps {
     institutions: string[] | null;
     authors: string[] | null;
 }
-// 定义 Papers 接口
-interface PaperSimple {
-  title: string;
-  publication_date: string;
-  venue: string | null;
-  authors: string[] | null;
-  abstract: string
-}
 
 // 定义 UserPaper 接口
 export interface UserPaper {
@@ -44,5 +36,22 @@ export interface UserPaper {
   tags: string[];
   status: number;
   score: number;
-  paper_info: PaperSimple; // 嵌套的 Papers 接口
+  title: string;
+  publication_date: string;
+  venue: string | null;
+  authors: string[] | null;
+  abstract: string
+}
+export interface DatabaseUserPaper {
+  paper_id: string;
+  tags: string[];
+  status: number;
+  score: number;
+  papers: {
+    title: string;
+    publication_date: string;
+    venue: string | null;
+    authors: string[] | null;
+    abstract: string;
+  };
 }

@@ -2,10 +2,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import PaperCard from './PaperCard/PaperCard';
 import { Squares2X2Icon, ListBulletIcon } from '@heroicons/react/24/solid';
-import { PaperMain, UserPaper } from '../../lib/DataModel';
+import { PaperMain, UserPaper } from '../../types/DataModel';
 import PaperModal from '../components/PaperModal/PaperModal';
 import { useUser,SignIn } from '@clerk/nextjs';
-import { fetchUserLibrary } from '../../lib/api'
+import { fetchUserLibrary } from '../../lib/DataBase'
+import LoadingComponent from '../components/LoadingSpinner';
+import EmptyState from '../components/EmptyState';
 const TABS = [
   { name: '想读', key: 0 },
   { name: '已略读', key: 2 },
@@ -26,27 +28,33 @@ const MyLibrary: React.FC = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
   const [openModalId, setOpenModalId] = useState<string>('');
   const { user, isSignedIn } = useUser();
-
+  const [isUserLoading, setIsUserLoading] = useState(true);
+  useEffect(() => {
+    if (user?.id) {
+      setIsUserLoading(false);
+    }
+  }, [user]);
   useEffect(() => {
     const fetchPapers = async () => {
+      if (!user?.id) {
+        console.log('未登录');
+        return;
+      }
       try {
         setLoading(true);
-        if(user!=null){
-        const data = await fetchUserLibrary(user.id,activeTab);
-        console.log(data)
-        setPapers(data);
-        setLoading(false);
-        }else{
-          console.log('not login')
-        }
+        const data = await fetchUserLibrary(user.id, activeTab);
+        setPapers(data as UserPaper[]);
       } catch (err) {
         setError('获取论文时出错。请稍后再试。');
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchPapers();
-  }, [activeTab]);
+    if (user?.id) {
+      fetchPapers();
+    }
+  }, [user, activeTab]);
 
   const handleChangeTab = (key: number) =>{
     setActiveTab(key)
@@ -68,7 +76,7 @@ const MyLibrary: React.FC = () => {
         selectedTags.length === 0 ||
         (Array.isArray(paper.tags) && selectedTags.every(tag => paper.tags.includes(tag)))
       )
-      .sort((a, b) => new Date(b.paper_info.publication_date).getTime() - new Date(a.paper_info.publication_date).getTime()); // 按时间戳升序排序
+      .sort((a, b) => new Date(b.publication_date).getTime() - new Date(a.publication_date).getTime()); // 按时间戳升序排序
   }, [papers, selectedTags]);
 
   const allTags = useMemo(() => {
@@ -89,7 +97,9 @@ const MyLibrary: React.FC = () => {
       .slice(0, 10) // 取前10个标签
       .map(([tag]) => tag); // 仅保留标签名
   }, [tagCounts]);
-
+  if (isUserLoading) {
+    return <LoadingComponent />;
+  }
   // Tab切换
   return(<>
   {isSignedIn ? (
@@ -154,28 +164,33 @@ const MyLibrary: React.FC = () => {
         </div>
       {loading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="loader"></div>
-        </div>
-      ) : (
-        // 移除多余的花括号
-        papers.map((paper) => (
-          <div key={paper.paper_id} onClick={() => handleOpenModal(paper.paper_id)}>
+  <div className="w-12 h-12 border-4 border-gray-200 rounded-full animate-spin border-t-blue-500"></div>
+</div>
+      ) : 
+        papers.length === 0 ? (
+          <EmptyState message="没有找到结果" icon="🔍" />
+        ) : (
+          papers.map((paper) => (
+            <div key={paper.paper_id} onClick={() => handleOpenModal(paper.paper_id)}>
             <PaperCard
               paper_id={paper.paper_id}
-              title={paper.paper_info.title}
+              title={paper.title}
               viewMode={viewMode}
               score={paper.score}
-              abstract={paper.paper_info.abstract}
-              
+              abstract={paper.abstract}
+              authors={paper.authors}
+              publication_date={paper.publication_date}
+              tags={paper.tags}
             />
           </div>
         ))
-      )}
-
+      )
+    }
+      
       {openModalId !== '' && (<PaperModal paper_id={openModalId} onClose={handleCloseModal} />)}
     </div>
   </> ):(<SignIn/>)
-};
+}
 </> )
 };
 
