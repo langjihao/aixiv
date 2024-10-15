@@ -31,7 +31,7 @@ const LayoutWrapper: React.FC<LayoutWrapperProps> = ({ children }) => {
               </Link>
             </div>
             <div className="flex justify-center w-1/3">
-              <BaseSearch />
+              {/* <BaseSearch /> */}
             </div>
             <div className="flex items-center justify-end space-x-4 w-1/3">
               {/* <SignedOut>
