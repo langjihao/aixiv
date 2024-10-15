@@ -35,16 +35,17 @@ const PaperDetail: React.FC<PaperDetailProps> = ({
   const handleWantToRead = () => {
     setWantToRead(!wantToRead);
     if(wantToRead==true && user!=null){
-      const collectedPaper : UserPaper = {
-        paper_id:paper_id,
-        user_id:user.id,
-        tags:[],
-        score:0,
-        status:0,
-        arxiv_id:arxivId,
-        comment:''
-      };
-      addPapertoUserLibrary(collectedPaper);
+      console.log('s')
+      // const collectedPaper : UserPaper = {
+      //   paper_id:paper_id,
+      //   user_id:user.id,
+      //   tags:[],
+      //   score:0,
+      //   status:0,
+      //   arxiv_id:arxivId,
+      //   comment:''
+      // };
+      // addPapertoUserLibrary(collectedPaper);
     }else{
       console.log(1)
     }

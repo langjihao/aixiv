@@ -32,6 +32,7 @@ export interface PaperDetailProps {
 
 // 定义 UserPaper 接口
 export interface UserPaper {
+  user_id: string;
   paper_id: string;
   tags: string[];
   status: number;

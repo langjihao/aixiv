@@ -22,30 +22,30 @@ export function RssParser(rawResponse: string): FeedEntity[] {
   const parsedXML = xmlParser.parse(rawResponse);
 
   if (parsedXML.rss && parsedXML.rss.channel && parsedXML.rss.channel.title && typeof parsedXML.rss.channel.title === 'string' && parsedXML.rss.channel.title.includes("ScienceDirect")) {
-    console.log("Matched ScienceDirect format");
+    // console.log("Matched ScienceDirect format");
     const result = parseScienceDirectRSSItems((parsedXML as RSS2).rss.channel.item);
-    console.log("ScienceDirect parsing result:", result);
+    // console.log("ScienceDirect parsing result:", result);
     if (result) {
       return result as FeedEntity[];
     }
   } else if (parsedXML["rdf:RDF"]) {
-    console.log("Matched RSS 1.0 format");
+    // console.log("Matched RSS 1.0 format");
     const result = parseRSSItems((parsedXML as RSS1)["rdf:RDF"].item);
-    console.log("RSS 1.0 parsing result:", result);
+    // console.log("RSS 1.0 parsing result:", result);
     if (result) {
       return result as FeedEntity[];
     }
   } else if (parsedXML.rss) {
-    console.log("Matched RSS 2.0 format");
+    // console.log("Matched RSS 2.0 format");
     const result = parseRSSItems((parsedXML as RSS2).rss.channel.item);
-    console.log("RSS 2.0 parsing result:", result);
+    // console.log("RSS 2.0 parsing result:", result);
     if (result) {
       return result as FeedEntity[];
     }
   } else if (parsedXML.feed) {
-    console.log("Matched Atom format");
+    // console.log("Matched Atom format");
     const result = parseAtomItems((parsedXML as Atom).feed.entry);
-    console.log("Atom parsing result:", result);
+    // console.log("Atom parsing result:", result);
     if (result) {
       return result as FeedEntity[];
     }
@@ -58,13 +58,11 @@ export function RssParser(rawResponse: string): FeedEntity[] {
 }
 
 function parseRSSItems(items: RSSItem[]) {
-  console.log(`开始解析 ${items.length} 个 RSS 项目`);
   let feedEntityDrafts: FeedEntity[] = [];
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     try {
-      console.log(`处理第 ${i + 1} 个项目：${item.title}`);
       let feedEntityDraft: FeedEntity = {
         title: item.title || "",
         mainURL: item.link || "",
@@ -126,15 +124,15 @@ function parseRSSItems(items: RSSItem[]) {
         feedEntityDraft.ids.ElsevierPII = item["prism:doi"] || "";
         feedEntityDraft.publication = item["prism:publicationName"] || "";
       }
-      console.log("Processed feed entity:", feedEntityDraft);
+      // console.log("Processed feed entity:", feedEntityDraft);
       feedEntityDrafts.push(feedEntityDraft);
-      console.log(`成功添加第 ${i + 1} 个项目`);
+      
     } catch (error) {
       console.error(`处理第 ${i + 1} 个项目时出错:`, error);
     }
   }
 
-  console.log(`解析完成，总共添加了 ${feedEntityDrafts.length} 个实体`);
+  
   return feedEntityDrafts;
 }
 function parseAtomItems(items: AtomItem[]) {
@@ -202,13 +200,12 @@ function parseAtomItems(items: AtomItem[]) {
 }
 
 function parseScienceDirectRSSItems(items: RSSItem[]) {
-  console.log(`开始解析 ${items.length} 个 ScienceDirect 项目`);
+
   let feedEntityDrafts: FeedEntity[] = [];
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     try {
-      console.log(`处理第 ${i + 1} 个项目：${item.title}`);
       let feedEntityDraft: FeedEntity = {
         title: item.title || "",
         mainURL: item.link || "",
@@ -245,13 +242,10 @@ function parseScienceDirectRSSItems(items: RSSItem[]) {
       }
 
       feedEntityDrafts.push(feedEntityDraft);
-      console.log(`成功添加第 ${i + 1} 个项目`);
     } catch (error) {
       console.error(`处理第 ${i + 1} 个项目时出错:`, error);
     }
   }
-
-  console.log(`解析完成，总共添加了 ${feedEntityDrafts.length} 个实体`);
   return feedEntityDrafts;
 }
 

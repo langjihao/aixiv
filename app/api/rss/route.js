@@ -11,7 +11,6 @@ export async function GET(request) {
 
   try {
     const response = await axios.get(url);
-    console.log(response.data);
     return new NextResponse(response.data, {
       status: 200,
       headers: { 'Content-Type': 'application/xml' },

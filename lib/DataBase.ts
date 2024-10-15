@@ -91,42 +91,42 @@ if (error) {
 return data; // 返回插入的数据
 };
 // 查询个人图书馆
-export const fetchUserLibrary = async (user_id: string, status: number) => {
-  const { data: user_papers, error } = await supabase
-    .from('user_papers')
-    .select(`
-      paper_id,
-      tags,
-      status,
-      score,
-      papers(title,publication_date,venue,authors,abstract)
-    `)
-    .eq('user_id', user_id)
-    .eq('status', status);
+// export const fetchUserLibrary = async (user_id: string, status: number) => {
+//   const { data: user_papers, error } = await supabase
+//     .from('user_papers')
+//     .select(`
+//       paper_id,
+//       tags,
+//       status,
+//       score,
+//       papers(title,publication_date,venue,authors,abstract)
+//     `)
+//     .eq('user_id', user_id)
+//     .eq('status', status);
 
-  if (error) {
-    console.error('Error fetching user library:', error);
-    throw new Error(error.message);
-  }
-  //bug:这里有一个类型注解错误始终无法修正，连表查询的papers被注解为list，
-  //但实际上是单个paper对象
-  //已经限制supabase外键链接为一对一，
-  //但是ts仍然无法识别
-  const adjustedPapers: UserPaper[] = (user_papers).map((paper) => {
-    return {
-      paper_id: paper.paper_id,
-      tags: paper.tags,
-      status: paper.status,
-      score: paper.score,
-      title: paper.papers.title,
-      publication_date: paper.papers.publication_date,
-      venue: paper.papers.venue,
-      authors: paper.papers.authors,
-      abstract: paper.papers.abstract,
-    };
-  });
-  return adjustedPapers;
-};
+//   if (error) {
+//     console.error('Error fetching user library:', error);
+//     throw new Error(error.message);
+//   }
+//   //bug:这里有一个类型注解错误始终无法修正，连表查询的papers被注解为list，
+//   //但实际上是单个paper对象
+//   //已经限制supabase外键链接为一对一，
+//   //但是ts仍然无法识别
+//   const adjustedPapers: UserPaper[] = (user_papers).map((paper) => {
+//     return {
+//       paper_id: paper.paper_id,
+//       tags: paper.tags,
+//       status: paper.status,
+//       score: paper.score,
+//       title: paper.papers.title,
+//       publication_date: paper.papers.publication_date,
+//       venue: paper.papers.venue,
+//       authors: paper.papers.authors,
+//       abstract: paper.papers.abstract,
+//     };
+//   });
+//   return adjustedPapers;
+// };
 export const storePaperData = async (paper: any) => {
   try {
     const {
