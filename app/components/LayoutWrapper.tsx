@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+// import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { Input } from "antd";
 import BaseSearch from './Search/BaseSearch';
 
@@ -34,12 +34,12 @@ const LayoutWrapper: React.FC<LayoutWrapperProps> = ({ children }) => {
               <BaseSearch />
             </div>
             <div className="flex items-center justify-end space-x-4 w-1/3">
-              <SignedOut>
+              {/* <SignedOut>
                 <SignInButton />
               </SignedOut>
               <SignedIn>
                 <UserButton />
-              </SignedIn>
+              </SignedIn> */}
             </div>
           </div>
         </header>

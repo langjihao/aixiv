@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import Poster from './Poster';
-import { useUser,SignIn } from '@clerk/nextjs'; 
-import { addPapertoUserLibrary } from '@/lib/DataBase'
-import { UserPaper } from '@/types/DataModel';
+// import { useUser,SignIn } from '@clerk/nextjs'; 
+// import { addPapertoUserLibrary } from '@/lib/DataBase'
+// import { UserPaper } from '@/types/DataModel';
 interface PaperDetailProps {
   paper_id:string;
   title: string;
@@ -30,25 +30,25 @@ const PaperDetail: React.FC<PaperDetailProps> = ({
   arxivId,
   repoUrl,
 }) => {
-  const { isSignedIn, user } = useUser();
+  // const { isSignedIn, user } = useUser();
   const [wantToRead, setWantToRead] = useState(false); // 状态管理
   const handleWantToRead = () => {
     setWantToRead(!wantToRead);
-    if(wantToRead==true && user!=null){
-      console.log('s')
-      // const collectedPaper : UserPaper = {
-      //   paper_id:paper_id,
-      //   user_id:user.id,
-      //   tags:[],
-      //   score:0,
-      //   status:0,
-      //   arxiv_id:arxivId,
-      //   comment:''
-      // };
-      // addPapertoUserLibrary(collectedPaper);
-    }else{
-      console.log(1)
-    }
+    // if(wantToRead==true && user!=null){
+    //   console.log('s')
+    //   // const collectedPaper : UserPaper = {
+    //   //   paper_id:paper_id,
+    //   //   user_id:user.id,
+    //   //   tags:[],
+    //   //   score:0,
+    //   //   status:0,
+    //   //   arxiv_id:arxivId,
+    //   //   comment:''
+    //   // };
+    //   // addPapertoUserLibrary(collectedPaper);
+    // }else{
+    //   console.log(1)
+    // }
   };
   const authorinfo = authors?authors:[];
   const tagsinfo = tags?tags:[];
@@ -118,7 +118,7 @@ const PaperDetail: React.FC<PaperDetailProps> = ({
           >
             沉浸式翻译
           </a>
-          {isSignedIn && collectionArea }
+          {/* {isSignedIn && collectionArea } */}
           {repoUrl && (
             <a
               href={repoUrl}
