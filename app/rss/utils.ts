@@ -1,6 +1,12 @@
 import { XMLParser } from "fast-xml-parser";
 // import { FeedEntity } from "@/models/feed-entity";
 const xmlParser = new XMLParser({ ignoreAttributes: false });
+interface IdInfo {
+  arxivId: string;
+  doi: string;
+  ElsevierPII: string;
+  semanticId: string
+}
 interface FeedEntity {
   title: string;
   mainURL: string;
@@ -10,94 +16,127 @@ interface FeedEntity {
   pubTime: string;
   arxiv: string;
   publication: string;
-  doi: string;
-  volume: string;
-  number: string;
+  ids: IdInfo;
 }
-export function RssParser(rawResponse: string) {
+export function RssParser(rawResponse: string): FeedEntity[] {
   const parsedXML = xmlParser.parse(rawResponse);
+
   if (parsedXML.rss && parsedXML.rss.channel && parsedXML.rss.channel.title && typeof parsedXML.rss.channel.title === 'string' && parsedXML.rss.channel.title.includes("ScienceDirect")) {
-    return parseScienceDirectRSSItems((parsedXML as RSS2).rss.channel.item);
+    console.log("Matched ScienceDirect format");
+    const result = parseScienceDirectRSSItems((parsedXML as RSS2).rss.channel.item);
+    console.log("ScienceDirect parsing result:", result);
+    if (result) {
+      return result as FeedEntity[];
+    }
   } else if (parsedXML["rdf:RDF"]) {
-    return parseRSSItems((parsedXML as RSS1)["rdf:RDF"].item);
+    console.log("Matched RSS 1.0 format");
+    const result = parseRSSItems((parsedXML as RSS1)["rdf:RDF"].item);
+    console.log("RSS 1.0 parsing result:", result);
+    if (result) {
+      return result as FeedEntity[];
+    }
   } else if (parsedXML.rss) {
-    return parseRSSItems((parsedXML as RSS2).rss.channel.item);
+    console.log("Matched RSS 2.0 format");
+    const result = parseRSSItems((parsedXML as RSS2).rss.channel.item);
+    console.log("RSS 2.0 parsing result:", result);
+    if (result) {
+      return result as FeedEntity[];
+    }
   } else if (parsedXML.feed) {
-    return parseAtomItems((parsedXML as Atom).feed.entry);
+    console.log("Matched Atom format");
+    const result = parseAtomItems((parsedXML as Atom).feed.entry);
+    console.log("Atom parsing result:", result);
+    if (result) {
+      return result as FeedEntity[];
+    }
   } else {
+    console.log("No matching format found");
     return [];
   }
+  console.log("Fallback: returning empty array");
+  return []
 }
 
 function parseRSSItems(items: RSSItem[]) {
+  console.log(`开始解析 ${items.length} 个 RSS 项目`);
   let feedEntityDrafts: FeedEntity[] = [];
-  for (const item of items) {
-    let feedEntityDraft: FeedEntity = {
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    try {
+      console.log(`处理第 ${i + 1} 个项目：${item.title}`);
+      let feedEntityDraft: FeedEntity = {
         title: item.title || "",
         mainURL: item.link || "",
+        ids: {},
       } as FeedEntity;
-    if (item.authors) {
-      feedEntityDraft.authors = `${item.authors}` || "";
-    } else {
-      let rawAuthor = item["dc:creator"];
-      let author;
-      if (rawAuthor && Array.isArray(rawAuthor)) {
-        author = (rawAuthor as string[])
-          .join(", ")
-          .replaceAll(/<[^>]*>/g, "");
+
+      if (item.authors) {
+        feedEntityDraft.authors = `${item.authors}` || "";
       } else {
-        author =
-          (item["dc:creator"] as string)?.replaceAll(/<[^>]*>/g, "") || "";
+        let rawAuthor = item["dc:creator"];
+        let author;
+        if (rawAuthor && Array.isArray(rawAuthor)) {
+          author = (rawAuthor as string[])
+            .join(", ")
+            .replaceAll(/<[^>]*>/g, "");
+        } else {
+          author =
+            (item["dc:creator"] as string)?.replaceAll(/<[^>]*>/g, "") || "";
+        }
+        feedEntityDraft.authors = author || "";
       }
-      feedEntityDraft.authors = author || "";
-    }
-    const dcDescription = item["dc:description"] || "";
-    const descriptionProps = item.description || {};
-    const description = typeof descriptionProps === 'object' && '#text' in descriptionProps
-      ? descriptionProps["#text"]
-      : `${descriptionProps}`;
-    feedEntityDraft.abstract =
-      (dcDescription.length > (description as string).length
-        ? dcDescription
-        : (description as string)) || "";
+      const dcDescription = item["dc:description"] || "";
+      const descriptionProps = item.description || {};
+      const description = typeof descriptionProps === 'object' && '#text' in descriptionProps
+        ? descriptionProps["#text"]
+        : `${descriptionProps}`;
+      feedEntityDraft.abstract =
+        (dcDescription.length > (description as string).length
+          ? dcDescription
+          : (description as string)) || "";
 
-    feedEntityDraft.feedTime = new Date(item["dc:date"] || new Date());
+      feedEntityDraft.feedTime = new Date(item["dc:date"] || new Date());
 
-    if (item["pubDate"]) {
-      feedEntityDraft.pubTime = `${new Date(item["pubDate"]).getFullYear()}`;
-    } else if (item["prism:coverDate"]) {
-      feedEntityDraft.pubTime = `${new Date(
-        item["prism:coverDate"]
-      ).getFullYear()}`;
-    }
-
-    if (item.link && item.link.includes("arxiv")) {
-      const arxivIds = item.link.match(
-        new RegExp(
-          "(\\d{4}.\\d{4,5}|[a-z\\-] (\\.[A-Z]{2})?\\/\\d{7})(v\\d )?",
-          "g"
-        )
-      );
-      if (arxivIds) {
-        feedEntityDraft.arxiv = arxivIds[0] || "";
+      if (item["pubDate"]) {
+        feedEntityDraft.pubTime = `${new Date(item["pubDate"]).toISOString()}`;
+      } else if (item["prism:coverDate"]) {
+        feedEntityDraft.pubTime = `${new Date(
+          item["prism:coverDate"]
+        ).toISOString()}`;
       }
-      feedEntityDraft.publication = "arXiv";
-      if (feedEntityDraft.pubTime === "") {
-        feedEntityDraft.pubTime = `20${feedEntityDraft.arxiv.slice(0, 2)}`;
+
+      if (item.link && item.link.includes("arxiv")) {
+        const arxivIds = item.link.match(
+          new RegExp(
+            "(\\d{4}.\\d{4,5}|[a-z\\-] (\\.[A-Z]{2})?\\/\\d{7})(v\\d )?",
+            "g"
+          )
+        );
+        if (arxivIds) {
+          feedEntityDraft.arxiv = arxivIds[0] || "";
+          feedEntityDraft.ids.arxivId = arxivIds[0] || "";
+        }
+        feedEntityDraft.publication = "arXiv";
+        if (feedEntityDraft.pubTime === "") {
+          feedEntityDraft.pubTime = `20${feedEntityDraft.arxiv.slice(0, 2)}`;
+        }
       }
+      if (item.link && item.link.includes("sciencedirect")) {
+        feedEntityDraft.ids.ElsevierPII = item["prism:doi"] || "";
+        feedEntityDraft.publication = item["prism:publicationName"] || "";
+      }
+      console.log("Processed feed entity:", feedEntityDraft);
+      feedEntityDrafts.push(feedEntityDraft);
+      console.log(`成功添加第 ${i + 1} 个项目`);
+    } catch (error) {
+      console.error(`处理第 ${i + 1} 个项目时出错:`, error);
     }
-
-    feedEntityDraft.doi = item["prism:doi"] || "";
-    feedEntityDraft.publication = item["prism:publicationName"] || "";
-    feedEntityDraft.volume = `${item["prism:volume"]}`;
-    feedEntityDraft.number = `${item["prism:number"]}`;
-
-    feedEntityDrafts.push(feedEntityDraft);
   }
 
+  console.log(`解析完成，总共添加了 ${feedEntityDrafts.length} 个实体`);
   return feedEntityDrafts;
 }
-
 function parseAtomItems(items: AtomItem[]) {
   let feedEntityDrafts: FeedEntity[] = [];
   for (const item of items) {
@@ -163,58 +202,56 @@ function parseAtomItems(items: AtomItem[]) {
 }
 
 function parseScienceDirectRSSItems(items: RSSItem[]) {
+  console.log(`开始解析 ${items.length} 个 ScienceDirect 项目`);
   let feedEntityDrafts: FeedEntity[] = [];
-  for (const item of items) {
-    let feedEntityDraft: FeedEntity = {
-      title: item.title || "",
-      mainURL: item.link || "",
-      authors: "",
-      abstract: "",
-      feedTime: new Date(),
-      pubTime: "",
-      arxiv: "",
-      publication: "",
-      doi: "",
-      volume: "",
-      number: ""
-    };
 
-    if (item.description) {
-      // get field between <p> </p>
-      const descriptionComponents = (item.description as string).match(
-        /<p>(.*?)<\/p>/g
-      ) || [];
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    try {
+      console.log(`处理第 ${i + 1} 个项目：${item.title}`);
+      let feedEntityDraft: FeedEntity = {
+        title: item.title || "",
+        mainURL: item.link || "",
+        feedTime: new Date(),
+        ids: {},
+      } as FeedEntity;
 
-      for (const component of descriptionComponents) {
-        if (component.startsWith("<p>Author(s)")) {
-          feedEntityDraft.authors = component.replaceAll("<p>Author(s): ", "").replaceAll("</p>", "")
-        }
-        if (component.startsWith("<p>Publication date:")) {
-          const dateStr = component.replaceAll("<p>Publication date: ", "").replaceAll("</p>", "")
-          const date = new Date(dateStr)
-          feedEntityDraft.pubTime = `${date.getFullYear()}`
-        }
-        if (component.startsWith("<p><b>Source")) {
-          const sourceComponents = component
-            .replaceAll("<p>", "")
-            .replaceAll("</p>", "")
-            .replace("<b>Source:</b> ", "")
-            .split(",").map(s => s.trim())
-          feedEntityDraft.publication = sourceComponents[0]
-          for (const sourceComponent of sourceComponents.slice(1)) {
-            if (sourceComponent.startsWith("Volume")) {
-              feedEntityDraft.volume = sourceComponent.replace("Volume ", "")
-            }
-            if (sourceComponent.startsWith("Issue")) {
-              feedEntityDraft.number = sourceComponent.replace("Issue ", "")
-            }
+      const pii = item.link;
+      if (pii) {
+        feedEntityDraft.ids.ElsevierPII = pii;
+      }
+
+      if (item.description && typeof item.description === 'string') {
+        const descriptionComponents = item.description.match(/<p>(.*?)<\/p>/g) || [];
+
+        for (const component of descriptionComponents) {
+          if (component.startsWith("<p>Author(s)")) {
+            feedEntityDraft.authors = component.replace("<p>Author(s): ", "").replace("</p>", "");
+          }
+          if (component.startsWith("<p>Publication date:")) {
+            const dateStr = component.replace("<p>Publication date: ", "").replace("</p>", "");
+            const date = new Date(dateStr);
+            feedEntityDraft.pubTime = `${date.getFullYear()}`;
+          }
+          if (component.startsWith("<p><b>Source")) {
+            const sourceComponents = component
+              .replace("<p>", "")
+              .replace("</p>", "")
+              .replace("<b>Source:</b> ", "")
+              .split(",").map(s => s.trim());
+            feedEntityDraft.publication = sourceComponents[0];
           }
         }
       }
+
+      feedEntityDrafts.push(feedEntityDraft);
+      console.log(`成功添加第 ${i + 1} 个项目`);
+    } catch (error) {
+      console.error(`处理第 ${i + 1} 个项目时出错:`, error);
     }
-    feedEntityDrafts.push(feedEntityDraft);
   }
 
+  console.log(`解析完成，总共添加了 ${feedEntityDrafts.length} 个实体`);
   return feedEntityDrafts;
 }
 
@@ -267,4 +304,3 @@ interface Atom {
     entry: AtomItem[];
   };
 }
-
