@@ -19,7 +19,8 @@ const RssReader: React.FC<{ feedUrl: string }> = ({ feedUrl }) => {
       setError(null);
       try {
         console.log('正在获取 RSS feed:', feedUrl);
-        const response = await axios.get(`/api/rss?url=${encodeURIComponent(feedUrl)}`);
+        const response = await axios.get(`/rss?url=${encodeURIComponent(feedUrl)}`);
+        console.log(response.data);
         const feed = await RssParser(response.data);
         const grouped = feed.reduce((acc: GroupedItems, item: any) => {
           const date = new Date(item.feedTime).toLocaleDateString();
@@ -29,7 +30,6 @@ const RssReader: React.FC<{ feedUrl: string }> = ({ feedUrl }) => {
           acc[date].push(item);
           return acc;
         }, {});
-
         setGroupedItems(grouped);
         console.log('RSS feed 已更新:', Object.keys(grouped).length, '个日期');
       } catch (err) {
@@ -66,6 +66,8 @@ const RssReader: React.FC<{ feedUrl: string }> = ({ feedUrl }) => {
                 pubDate={item.feedTime} 
                 authors={item.authors}
                 url={item.mainURL}
+                ids={item.ids}
+                publication={item.publication}
               />
             ))}
           </div>

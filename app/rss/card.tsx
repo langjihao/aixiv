@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
+import ScrapeMetadata from '@/lib/ScrapeMetadata';
+
+interface IdInfo {
+  arxivId: string;
+  doi: string;
+  ElsevierPII: string;
+  semanticId: string
+}
 
 interface CardProps {
   title: string;
@@ -7,13 +15,20 @@ interface CardProps {
   pubDate: string;
   url: string;
   authors: string;
+  ids: IdInfo;
+  publication: string;
 }
 
-const Card: React.FC<CardProps> = ({ title, abstract, pubDate, url, authors }) => {
+
+const Card: React.FC<CardProps> = ({ title, abstract, pubDate, url, authors, ids , publication }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleDescription = () => {
     setIsOpen(!isOpen);
+  };
+  const handleScrapeMetadata = () => {
+    const data = ScrapeMetadata({ids: ids, publication: publication});
+    console.log(data);
   };
 
   return (
@@ -49,6 +64,14 @@ const Card: React.FC<CardProps> = ({ title, abstract, pubDate, url, authors }) =
             className="text-blue-600 hover:text-blue-800 transition-colors duration-200"
           >
             阅读全文 →
+          </a>
+          <a 
+            onClick={handleScrapeMetadata}
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-blue-600 hover:text-blue-800 transition-colors duration-200"
+          >
+            刮削元数据 →
           </a>
         </div>
       )}

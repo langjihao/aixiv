@@ -16,8 +16,10 @@ interface FeedEntity {
   pubTime: string;
   arxiv: string;
   publication: string;
+  venue: string;
   ids: IdInfo;
 }
+
 export function RssParser(rawResponse: string): FeedEntity[] {
   const parsedXML = xmlParser.parse(rawResponse);
 
@@ -120,10 +122,6 @@ function parseRSSItems(items: RSSItem[]) {
           feedEntityDraft.pubTime = `20${feedEntityDraft.arxiv.slice(0, 2)}`;
         }
       }
-      if (item.link && item.link.includes("sciencedirect")) {
-        feedEntityDraft.ids.ElsevierPII = item["prism:doi"] || "";
-        feedEntityDraft.publication = item["prism:publicationName"] || "";
-      }
       // console.log("Processed feed entity:", feedEntityDraft);
       feedEntityDrafts.push(feedEntityDraft);
       
@@ -200,6 +198,11 @@ function parseAtomItems(items: AtomItem[]) {
 }
 
 function parseScienceDirectRSSItems(items: RSSItem[]) {
+  function extractPII(url: string) {
+    const regex = /\/pii\/(S\d+)/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+  }
 
   let feedEntityDrafts: FeedEntity[] = [];
 
@@ -211,9 +214,10 @@ function parseScienceDirectRSSItems(items: RSSItem[]) {
         mainURL: item.link || "",
         feedTime: new Date(),
         ids: {},
+        publication: "Elsevier",
       } as FeedEntity;
 
-      const pii = item.link;
+      const pii = extractPII(item.link || "");
       if (pii) {
         feedEntityDraft.ids.ElsevierPII = pii;
       }
